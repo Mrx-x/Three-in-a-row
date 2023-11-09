@@ -136,6 +136,20 @@ void Game::fillBoard(LayerColor* layer)
 	auto physicsWorld = getPhysicsWorld();
 	physicsWorld->setSpeed(2.0f);
 
+	Size sizeLayer = layer->getContentSize();
+	auto scoreLabel = Label::createWithSystemFont("Score", "Arial", 30);
+	scoreLabel->setAnchorPoint(Vec2(0.0f, 1.0f));
+	scoreLabel->setPosition(Vec2(sizeLayer.width / 2 - scoreLabel->getContentSize().width, sizeLayer.height - scoreLabel->getContentSize().height));
+	scoreLabel->setColor(Color3B::GREEN);
+
+	auto pointsLabel = Label::createWithSystemFont("0", "Arial", 30);
+	pointsLabel->setAnchorPoint(Vec2(0.0f, 1.0f));
+	pointsLabel->setPosition(Vec2(sizeLayer.width / 2 + 10, sizeLayer.height - pointsLabel->getContentSize().height));
+	pointsLabel->setColor(Color3B::GREEN);
+	pointsLabel->setName("pointsLabel");
+
+	layer->addChild(scoreLabel);
+	layer->addChild(pointsLabel);
 
 	auto bottomEdge = Node::create();
 	auto bottomBody = PhysicsBody::createEdgeSegment(Vec2(offsetWidth, offsetHeight), Vec2(numCols * (blockWidth)+offsetWidth, offsetHeight), PhysicsMaterial(0.0f, 0.0f, 1.0f));
@@ -189,6 +203,10 @@ void Game::fillBoard(LayerColor* layer)
 							DFS(rowFromPos, colFromPos, countNeighbor, targetColor, visited);
 
 							int resultDeletion = GameLayer::removeBlocks(layer, blocks, visited, numRows, numCols, countNeighbor);
+							score += resultDeletion;
+
+							Label* pScore = dynamic_cast<Label*>(layer->getChildByName("pointsLabel"));
+							pScore->setString(std::to_string(score));
 
 							if (resultDeletion) { _eventDispatcher->removeEventListener(listener); }
 							event->stopPropagation();
