@@ -25,6 +25,9 @@ public:
     virtual bool init();
 
     void replaceScene(cocos2d::Ref* pSender);
+    void fillBoard(cocos2d::LayerColor* layer);
+    cocos2d::Vec2 getPositionForBlock(int row, int col, int offsetHeight, int padding = 0);
+    cocos2d::Color3B getRandomColor();
 
     CREATE_FUNC(Game);
 };

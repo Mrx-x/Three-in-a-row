@@ -86,6 +86,7 @@ bool Game::init()
 	gameLayer->setContentSize(Size(winSize.width, winSize.height - topMenuHeight));
 	gameLayer->setPosition(Vec2(0, 0));
 
+	fillBoard(gameLayer);
 
 	addChild(topMenuLayer);
 	addChild(gameLayer);
@@ -99,5 +100,63 @@ void Game::replaceScene(cocos2d::Ref* pSender)
 	if (newScene)
 	{
 		Director::getInstance()->replaceScene(newScene);
+	}
+}
+
+cocos2d::Color3B Game::getRandomColor()
+{
+	int color = std::rand() % 3;
+	switch (color)
+	{
+	case 0:
+	{
+		return Color3B::RED;
+	}
+	case 1:
+	{
+		return Color3B::GREEN;
+	}
+	case 2:
+		return Color3B::BLUE;
+	}
+}
+
+cocos2d::Vec2 Game::getPositionForBlock(int row, int col, int offsetHeight, int padding)
+{
+	float x = col * (blockWidth + padding) + offsetWidth;
+	float y = row * (blockHeight + padding) + offsetHeight;
+	return cocos2d::Vec2(x, y);
+}
+
+void Game::fillBoard(LayerColor* layer)
+{
+	//calc the height offset
+	const int offsetHeight = (layer->getContentSize().height - blockHeight * numRows) / 2;
+	const int padding = 0;
+	auto physicsWorld = getPhysicsWorld();
+	physicsWorld->setSpeed(2.0f);
+
+
+	auto bottomEdge = Node::create();
+	auto bottomBody = PhysicsBody::createEdgeSegment(Vec2(offsetWidth, offsetHeight), Vec2(numCols * (blockWidth)+offsetWidth, offsetHeight), PhysicsMaterial(0.0f, 0.0f, 1.0f));
+	bottomBody->setDynamic(false);
+	bottomBody->setGravityEnable(false);
+	bottomEdge->setPhysicsBody(bottomBody);
+
+	addChild(bottomEdge);
+
+	for (int row = 0; row < numRows; row++)
+	{
+		for (int col = 0; col < numCols; col++)
+		{
+			auto block = Sprite::create("block.png");
+			if (!block) log("Sprite for [%d][%d] not was loaded", row, col);
+
+			blocks[row][col] = block;
+			block->setAnchorPoint(Vec2(0, 0));
+			block->setColor(getRandomColor());
+			block->setPosition(getPositionForBlock(row, col, offsetHeight, padding));
+			layer->addChild(block);
+		}
 	}
 }
