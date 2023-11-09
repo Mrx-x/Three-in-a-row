@@ -32,4 +32,8 @@ public:
     void DFS(int row, int col, int& countNeighbor, Color3B targetColor, std::vector<std::vector<bool>>& visited);
 
     CREATE_FUNC(Game);
+
+private:
+    bool checkGameOver();
+    void gameOverScene();
 };

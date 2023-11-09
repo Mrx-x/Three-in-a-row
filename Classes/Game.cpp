@@ -1,5 +1,6 @@
 #include "Game.h"
 #include "GameLayer.h"
+#include "ui\UIButton.h"
 
 Scene* Game::createScene()
 {
@@ -208,6 +209,11 @@ void Game::fillBoard(LayerColor* layer)
 							Label* pScore = dynamic_cast<Label*>(layer->getChildByName("pointsLabel"));
 							pScore->setString(std::to_string(score));
 
+							if (!this->checkGameOver())
+							{
+								this->gameOverScene();
+							}
+
 							if (resultDeletion) { _eventDispatcher->removeEventListener(listener); }
 							event->stopPropagation();
 						}
@@ -235,4 +241,65 @@ void Game::DFS(int row, int col, int& countNeighbor, Color3B targetColor, std::v
 	DFS(row + 1, col, countNeighbor, targetColor, visited);
 	DFS(row, col - 1, countNeighbor, targetColor, visited);
 	DFS(row, col + 1, countNeighbor, targetColor, visited);
+}
+
+bool Game::checkGameOver()
+{
+	int countNeighbor = 0;
+	std::vector<std::vector<bool>> visited(numRows, std::vector<bool>(numCols, false));
+	for (int row = 0; row < numRows; ++row)
+	{
+		for (int col = 0; col < numCols; ++col)
+		{
+			if (blocks[row][col] == nullptr) continue;
+			else
+			{
+				Game::DFS(row, col, countNeighbor, blocks[row][col]->getColor(), visited);
+				if (countNeighbor >= 3) return true;
+				else countNeighbor = 0;
+			}
+		}
+	}
+	return false;
+}
+
+void Game::gameOverScene()
+{
+	Size winSize = Director::getInstance()->getWinSize();
+
+	auto gameOverScene = Scene::create();
+	auto layer = LayerColor::create(Color4B(166, 3, 3, 255));
+
+	auto goLabel = Label::createWithSystemFont("GAME OVER", "Arial", 60);
+	goLabel->setPosition(winSize.width / 2, winSize.height / 2 + goLabel->getContentSize().height);
+
+	auto scoreLabel = Label::createWithSystemFont(std::string("Your score: ") + std::to_string(score), "Arial", 40);
+	scoreLabel->setPosition(winSize.width / 2, winSize.height / 2);
+
+	auto button = ui::Button::create("button.png");
+	button->setTitleText("Restart");
+	button->setTitleFontSize(40);
+	button->setPosition({ winSize.width / 2, winSize.height / 2 - scoreLabel->getContentSize().height * 2 });
+	button->addTouchEventListener([&](Ref* sender, ui::Widget::TouchEventType type)
+		{
+			switch (type)
+			{
+			case ui::Widget::TouchEventType::BEGAN:
+				break;
+			case ui::Widget::TouchEventType::ENDED:
+			{
+				replaceScene(sender);
+				break;
+			}
+			default:
+				break;
+			}
+		});
+
+	layer->addChild(goLabel);
+	layer->addChild(scoreLabel);
+	layer->addChild(button);
+
+	gameOverScene->addChild(layer);
+	Director::getInstance()->replaceScene(TransitionFade::create(1.5, gameOverScene, Color3B(163, 72, 110)));
 }
