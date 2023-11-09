@@ -156,6 +156,16 @@ void Game::fillBoard(LayerColor* layer)
 			block->setAnchorPoint(Vec2(0, 0));
 			block->setColor(getRandomColor());
 			block->setPosition(getPositionForBlock(row, col, offsetHeight, padding));
+
+			auto blockBody = PhysicsBody::createBox(Size(blockWidth, blockHeight), PhysicsMaterial(0.0f, 0.0f, 1.0f));
+			blockBody->setDynamic(true);
+			blockBody->setGravityEnable(true);
+			blockBody->setCategoryBitmask(0x01);
+			blockBody->setCollisionBitmask(0x01);
+			blockBody->setRotationEnable(false);
+		
+			block->setPhysicsBody(blockBody);
+
 			layer->addChild(block);
 		}
 	}
