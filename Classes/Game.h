@@ -29,5 +29,7 @@ public:
     cocos2d::Vec2 getPositionForBlock(int row, int col, int offsetHeight, int padding = 0);
     cocos2d::Color3B getRandomColor();
 
+    void DFS(int row, int col, int& countNeighbor, Color3B targetColor, std::vector<std::vector<bool>>& visited);
+
     CREATE_FUNC(Game);
 };

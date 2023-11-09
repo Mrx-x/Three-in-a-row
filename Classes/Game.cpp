@@ -167,6 +167,54 @@ void Game::fillBoard(LayerColor* layer)
 			block->setPhysicsBody(blockBody);
 
 			layer->addChild(block);
+
+			auto listener = EventListenerMouse::create();
+			listener->onMouseDown = [this, listener, physicsWorld, row, col, offsetHeight, padding, layer](EventMouse* event)
+			{
+				if (event->getMouseButton() == EventMouse::MouseButton::BUTTON_LEFT)
+				{
+					Vec2 pos = { event->getCursorX() - layer->getPositionX(), event->getCursorY() - layer->getPositionY() };
+					int rowFromPos = static_cast<int>((pos.y - offsetHeight) / (blockHeight + padding));
+					int colFromPos = static_cast<int>((pos.x - offsetWidth) / (blockWidth + padding));
+					if (!(pos.x < offsetWidth || pos.x > numCols * blockWidth + offsetWidth || pos.y < offsetHeight || pos.y > numRows * blockHeight + offsetHeight))
+					{
+						if (blocks[rowFromPos][colFromPos] != nullptr && blocks[rowFromPos][colFromPos]->getBoundingBox().containsPoint(pos))
+						{
+							log("SPRITE WAS CLIKED [%d][%d]", rowFromPos, colFromPos);
+							Color3B targetColor = blocks[rowFromPos][colFromPos]->getColor();
+							std::vector<std::vector<bool>> visited(numRows, std::vector<bool>(numCols, false));
+
+							int countNeighbor = 0;
+
+							DFS(rowFromPos, colFromPos, countNeighbor, targetColor, visited);
+
+							int resultDeletion = GameLayer::removeBlocks(layer, blocks, visited, numRows, numCols, countNeighbor);
+
+							if (resultDeletion) { _eventDispatcher->removeEventListener(listener); }
+							event->stopPropagation();
+						}
+					}
+				}
+			};
+			_eventDispatcher->addEventListenerWithSceneGraphPriority(listener, blocks[row][col]);
 		}
 	}
+}
+
+
+void Game::DFS(int row, int col, int& countNeighbor, Color3B targetColor, std::vector<std::vector<bool>>& visited) {
+	if (row < 0 || row >= numRows || col < 0 || col >= numCols || visited[row][col] == true || blocks[row][col] == nullptr) {
+		return;
+	}
+
+	if (blocks[row][col]->getColor() != targetColor) {
+		return;
+	}
+
+	visited[row][col] = true;
+	++countNeighbor;
+	DFS(row - 1, col, countNeighbor, targetColor, visited);
+	DFS(row + 1, col, countNeighbor, targetColor, visited);
+	DFS(row, col - 1, countNeighbor, targetColor, visited);
+	DFS(row, col + 1, countNeighbor, targetColor, visited);
 }

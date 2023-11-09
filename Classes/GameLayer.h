@@ -13,5 +13,7 @@ public:
 
     virtual bool init();
 
+    static int removeBlocks(LayerColor* layer, std::vector<std::vector<Sprite*>>& blocks, std::vector<std::vector<bool>>& visited, int numRows, int numCols, int countNeighbor);
+
     CREATE_FUNC(GameLayer);
 };
